@@ -1,0 +1,32 @@
+<%
+  redis_db_offset = (Rubber.env == 'test' ? 5 : 0)
+%>
+common: &common
+  host: localhost
+  port: <%= Rubber.config.redis_server_port %>
+  thread_safe: true
+  <% if ENV['CI'] %>
+  zkservers: localhost:2181
+  <% end %>
+
+development:
+  cache:
+    <<: *common
+    db: <%= 0 + redis_db_offset %>
+  resque:
+    <<: *common
+    db: <%= 1 + redis_db_offset %>
+  rollout:
+    <<: *common
+    db: <%= 3 + redis_db_offset %>
+
+test:
+  cache:
+    <<: *common
+    db: <%= 0 + redis_db_offset %>
+  resque:
+    <<: *common
+    db: <%= 1 + redis_db_offset %>
+  rollout:
+    <<: *common
+    db: <%= 3 + redis_db_offset %>

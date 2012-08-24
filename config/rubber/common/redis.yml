@@ -1,0 +1,27 @@
+<%
+  @path = "#{Rubber.root}/config/redis.yml"
+
+  redis_zookeeper_servers =  rubber_instances.for_role("zookeeper").collect do |ic|
+    "#{ic.name}:#{Rubber.config.zookeeper_client_port}"
+  end
+%>
+common: &common
+<% if redis_zookeeper_servers.size > 0 %>
+  zkservers: <%= redis_zookeeper_servers.join(",") %>
+  znode_path: <%= rubber_env.redis_failover_znode_path %>
+<% else %>
+  host: <%= rubber_instances.for_role('redis_master').first.full_name %>
+  port: <%= rubber_env.redis_server_port %>
+<% end %>
+  thread_safe: true
+  
+<%= Rubber.env %>:
+  cache:
+    <<: *common
+    db: 0
+  resque:
+    <<: *common
+    db: 1
+  rollout:
+    <<: *common
+    db: 3
